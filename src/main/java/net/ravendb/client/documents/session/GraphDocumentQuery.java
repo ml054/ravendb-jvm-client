@@ -7,6 +7,7 @@ import net.ravendb.client.documents.queries.timings.QueryTimings;
 import net.ravendb.client.documents.session.tokens.WithEdgesToken;
 import net.ravendb.client.documents.session.tokens.WithToken;
 import net.ravendb.client.primitives.Reference;
+import org.springframework.test.util.AopTestUtils;
 
 import java.time.Duration;
 import java.util.Map;
@@ -175,6 +176,8 @@ public class GraphDocumentQuery<T> extends AbstractDocumentQuery<T, GraphDocumen
         if (docQuery.selectTokens != null && !docQuery.selectTokens.isEmpty()) {
             throw new UnsupportedOperationException("Select is not permitted in a 'with' clause in query: " + docQuery);
         }
+
+        docQuery = AopTestUtils.getTargetObject(docQuery);
 
         for (Map.Entry<String, Object> keyValue : docQuery.queryParameters.entrySet()) {
             queryParameters.put(keyValue.getKey(), keyValue.getValue());

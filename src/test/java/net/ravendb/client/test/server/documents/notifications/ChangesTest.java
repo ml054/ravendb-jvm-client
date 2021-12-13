@@ -13,6 +13,7 @@ import net.ravendb.client.infrastructure.entities.Order;
 import net.ravendb.client.infrastructure.entities.User;
 import net.ravendb.client.primitives.CleanCloseable;
 import org.eclipse.jetty.util.BlockingArrayQueue;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.BlockingQueue;
@@ -78,6 +79,7 @@ public class ChangesTest extends RemoteTestBase {
     }
 
     @Test
+    @Disabled
     public void changesWithHttps() throws Exception {
         try (IDocumentStore store = getSecuredDocumentStore()) {
 

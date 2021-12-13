@@ -163,4 +163,8 @@ public interface IDocumentSession extends CleanCloseable {
 
     <T> ISessionDocumentRollupTypedTimeSeries<T> timeSeriesRollupFor(Class<T> clazz, String documentId, String policy, String raw);
 
+    boolean isLoaded(String id);
+
+    <T> IRawDocumentQuery<T> rawQuery(Class<T> clazz, String query);
+
 }

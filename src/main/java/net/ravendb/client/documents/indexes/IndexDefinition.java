@@ -1,5 +1,7 @@
 package net.ravendb.client.documents.indexes;
 
+import net.ravendb.client.DepsTracker;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,6 +14,7 @@ public class IndexDefinition {
 
     public IndexDefinition() {
         configuration = new IndexConfiguration();
+        DepsTracker.INSTANCE.reportEvent("createIndex::" + getClass().getSimpleName());
     }
 
     private String name;

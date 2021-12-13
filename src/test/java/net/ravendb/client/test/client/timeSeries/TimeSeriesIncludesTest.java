@@ -15,6 +15,7 @@ import net.ravendb.client.infrastructure.entities.Order;
 import net.ravendb.client.primitives.TimeValue;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.AopTestUtils;
 
 import java.util.*;
 
@@ -156,7 +157,7 @@ public class TimeSeriesIncludesTest extends RemoteTestBase {
                 assertThat(vals.get(60).getTimestamp())
                         .isEqualTo(DateUtils.addMinutes(baseLine, 50));
 
-                InMemoryDocumentSessionOperations sessionOperations = (InMemoryDocumentSessionOperations) session;
+                InMemoryDocumentSessionOperations sessionOperations = AopTestUtils.getTargetObject(session);
 
                 Map<String, List<TimeSeriesRangeResult>> cache = sessionOperations.getTimeSeriesByDocId().get(documentId);
                 assertThat(cache)

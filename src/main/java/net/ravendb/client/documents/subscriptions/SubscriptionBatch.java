@@ -10,6 +10,8 @@ import net.ravendb.client.http.RequestExecutor;
 import net.ravendb.client.json.MetadataAsDictionary;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
+import org.springframework.aop.support.AopUtils;
+import org.springframework.test.util.AopTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -133,7 +135,7 @@ public class SubscriptionBatch<T> {
     private IDocumentSession openSessionInternal(SessionOptions options) {
         IDocumentSession s = _store.openSession(options);
 
-        loadDataToSession((InMemoryDocumentSessionOperations) s);
+        loadDataToSession(AopTestUtils.getTargetObject(s));
         return s;
     }
 
@@ -151,7 +153,7 @@ public class SubscriptionBatch<T> {
         }
     }
 
-    private void loadDataToSession(InMemoryDocumentSessionOperations s) {
+    private void loadDataToSession(DocumentSession s) {
         if (s.noTracking) {
             return;
         }

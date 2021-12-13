@@ -2,6 +2,7 @@ package net.ravendb.client.http;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.ravendb.client.DepsTracker;
 import net.ravendb.client.extensions.HttpExtensions;
 import net.ravendb.client.extensions.JsonExtensions;
 import net.ravendb.client.primitives.Reference;
@@ -90,6 +91,8 @@ public abstract class RavenCommand<TResult> {
         responseType = RavenCommandResponseType.OBJECT;
         this.canCache = true;
         this.canCacheAggressively = true;
+
+        DepsTracker.INSTANCE.reportEvent("COMMAND::" + getClass().getSimpleName());
     }
 
     protected RavenCommand(RavenCommand<TResult> copy) {

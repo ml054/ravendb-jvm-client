@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Defaults;
 import com.google.common.base.Stopwatch;
 import net.ravendb.client.Constants;
+import net.ravendb.client.DepsTracker;
 import net.ravendb.client.documents.CloseableIterator;
 import net.ravendb.client.documents.DocumentStore;
 import net.ravendb.client.documents.IdTypeAndName;
@@ -29,15 +30,22 @@ import net.ravendb.client.extensions.JsonExtensions;
 import net.ravendb.client.json.MetadataAsDictionary;
 import net.ravendb.client.primitives.Reference;
 import net.ravendb.client.primitives.Tuple;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.util.EntityUtils;
+import org.springframework.aop.BeforeAdvice;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.test.util.AopTestUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Method;
+import java.net.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
@@ -55,7 +63,7 @@ public class DocumentSession extends InMemoryDocumentSessionOperations
      */
     @Override
     public IAdvancedSessionOperations advanced() {
-        return this;
+        return (IAdvancedSessionOperations) DepsTracker.INSTANCE.track(this);
     }
 
     @Override
@@ -73,7 +81,7 @@ public class DocumentSession extends InMemoryDocumentSessionOperations
     @Override
     public IAttachmentsSessionOperations attachments() {
         if (_attachments == null) {
-            _attachments = new DocumentSessionAttachments(this);
+            _attachments = DepsTracker.INSTANCE.track(new DocumentSessionAttachments(this));
         }
         return _attachments;
     }
@@ -203,6 +211,7 @@ public class DocumentSession extends InMemoryDocumentSessionOperations
     public ResponseTimeInformation executeAllPendingLazyOperations() {
         ArrayList<GetRequest> requests = new ArrayList<>();
         for (int i = 0; i < pendingLazyOperations.size(); i++) {
+            DepsTracker.INSTANCE.reportEvent("Lazy::" + pendingLazyOperations.get(i).getClass().getSimpleName());
             GetRequest req = pendingLazyOperations.get(i).createRequest();
             if (req == null) {
                 pendingLazyOperations.remove(i);
@@ -407,6 +416,8 @@ public class DocumentSession extends InMemoryDocumentSessionOperations
         if (includes == null) {
             return load(clazz, ids);
         }
+
+        DepsTracker.INSTANCE.reportEvent("loadWithIncludes");
 
         IncludeBuilder includeBuilder = new IncludeBuilder(getConventions());
         includes.accept(includeBuilder);
@@ -812,7 +823,9 @@ public class DocumentSession extends InMemoryDocumentSessionOperations
         indexName = indexNameAndCollection.first;
         collectionName = indexNameAndCollection.second;
 
-        return new DocumentQuery<>(clazz, this, indexName, collectionName, isMapReduce);
+        DocumentQuery<T> q = new DocumentQuery<>(clazz, this, indexName, collectionName, isMapReduce);
+
+        return DepsTracker.INSTANCE.track(q);
     }
 
     @Override
@@ -851,7 +864,7 @@ public class DocumentSession extends InMemoryDocumentSessionOperations
         getRequestExecutor().execute(command, sessionInfo);
 
         CloseableIterator<ObjectNode> result = streamOperation.setResult(command.getResult());
-        return yieldResults((AbstractDocumentQuery) query, result);
+        return yieldResults((AbstractDocumentQuery) AopTestUtils.getTargetObject(query), result);
     }
 
     @Override

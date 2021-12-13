@@ -16,6 +16,9 @@ import net.ravendb.client.serverwide.DatabaseRecord;
 import net.ravendb.client.serverwide.operations.CreateDatabaseOperation;
 import net.ravendb.client.serverwide.operations.DeleteDatabasesOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +39,16 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("SameParameterValue")
 public class RemoteTestBase extends RavenTestDriver implements CleanCloseable {
+
+    @BeforeEach
+    public void before(TestInfo info) {
+        DepsTracker.INSTANCE.testStart(info.getTestClass().get().getSimpleName(), info.getTestMethod().get().getName());
+    }
+
+    @AfterEach
+    public void afterTest() {
+        DepsTracker.INSTANCE.testEnd();
+    }
 
     private final RavenServerLocator locator;
     private final RavenServerLocator securedLocator;

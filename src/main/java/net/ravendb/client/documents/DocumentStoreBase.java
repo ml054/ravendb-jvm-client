@@ -1,5 +1,6 @@
 package net.ravendb.client.documents;
 
+import net.ravendb.client.DepsTracker;
 import net.ravendb.client.documents.changes.IDatabaseChanges;
 import net.ravendb.client.documents.conventions.DocumentConventions;
 import net.ravendb.client.documents.indexes.AbstractIndexCreationTaskBase;
@@ -392,6 +393,7 @@ public abstract class DocumentStoreBase implements IDocumentStore {
      */
     public void setCertificate(KeyStore certificate) {
         assertNotInitialized("certificate");
+        DepsTracker.INSTANCE.reportEvent("certificate");
         _certificate = certificate;
     }
 

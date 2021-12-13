@@ -1,5 +1,6 @@
 package net.ravendb.client.documents;
 
+import net.ravendb.client.DepsTracker;
 import net.ravendb.client.documents.changes.DatabaseChanges;
 import net.ravendb.client.documents.changes.DatabaseChangesOptions;
 import net.ravendb.client.documents.changes.EvictItemsFromCacheBasedOnChanges;
@@ -167,7 +168,8 @@ public class DocumentStore extends DocumentStoreBase {
         DocumentSession session = new DocumentSession(this, sessionId, options);
         registerEvents(session);
         afterSessionCreated(session);
-        return session;
+
+        return DepsTracker.INSTANCE.track(session);
     }
 
     @Override
@@ -315,7 +317,9 @@ public class DocumentStore extends DocumentStoreBase {
 
         DatabaseChangesOptions changesOptions = new DatabaseChangesOptions(ObjectUtils.firstNonNull(database, getDatabase()), nodeTag);
 
-        return _databaseChanges.computeIfAbsent(changesOptions, this::createDatabaseChanges);
+        IDatabaseChanges changes = _databaseChanges.computeIfAbsent(changesOptions, this::createDatabaseChanges);
+
+        return DepsTracker.INSTANCE.track(changes);
     }
 
     protected IDatabaseChanges createDatabaseChanges(DatabaseChangesOptions node) {
@@ -361,6 +365,8 @@ public class DocumentStore extends DocumentStoreBase {
     @Override
     public CleanCloseable aggressivelyCacheFor(Duration cacheDuration, AggressiveCacheMode mode, String database) {
         assertInitialized();
+
+        DepsTracker.INSTANCE.reportEvent("aggressivelyCacheFor");
 
         database = ObjectUtils.firstNonNull(database, getDatabase());
 
@@ -451,6 +457,8 @@ public class DocumentStore extends DocumentStoreBase {
     @Override
     public BulkInsertOperation bulkInsert(String database) {
         assertInitialized();
+
+        DepsTracker.INSTANCE.reportEvent("DocumentStore::bulkInsert");
 
         return new BulkInsertOperation(getEffectiveDatabase(database), this);
     }
