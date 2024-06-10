@@ -18,7 +18,12 @@ import net.ravendb.client.http.AggressiveCacheOptions;
 import net.ravendb.client.http.RequestExecutor;
 import net.ravendb.client.primitives.*;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.hc.core5.ssl.SSLContexts;
 
+import javax.crypto.BadPaddingException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -276,6 +281,24 @@ public class DocumentStore extends DocumentStoreBase {
     protected void assertValidConfiguration() {
         if (urls == null || urls.length == 0) {
             throw new IllegalArgumentException("Document store URLs cannot be empty");
+        }
+
+        // java specific: check if PFX (if provided) can be read correctly
+        if (getCertificate() != null) {
+            try {
+                // do quick test if PFX can be opened by security provider
+                SSLContexts.custom()
+                        .loadKeyMaterial(getCertificate(), getCertificatePrivateKeyPassword());
+            } catch (UnrecoverableKeyException e) {
+                if (e.getCause() instanceof BadPaddingException) {
+                    throw new IllegalStateException("Unable to verify certificate. Looks like your security provider " +
+                            "can't read keystore properly. Suggested solutions: (1) Provide certificate as PEM file containing both private and public key, " +
+                            "(2) Use different security provider (ie. BouncyCastle)", e);
+                }
+                throw new IllegalStateException("Unable to verify certificate", e);
+            } catch (NoSuchAlgorithmException | KeyStoreException e) {
+                throw new IllegalStateException("Unable to verify certificate", e);
+            }
         }
     }
 
