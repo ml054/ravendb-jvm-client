@@ -65,6 +65,7 @@ public class QueueSinkTest extends RemoteTestBase {
         QueueSinkScript script = new QueueSinkScript();
         script.setQueues(Collections.singletonList("users"));
         script.setScript("this.a = 5");
+        script.setName("Script #1");
         queueSinkConfiguration.setScripts(Collections.singletonList(script));
 
         AddQueueSinkOperationResult addResult = store.maintenance().send(new AddQueueSinkOperation<>(queueSinkConfiguration));
@@ -84,7 +85,7 @@ public class QueueSinkTest extends RemoteTestBase {
 
         sink.getConfiguration().setDisabled(false);
 
-        UpdateQueueSinkOperation<ConnectionString> updateResult = new UpdateQueueSinkOperation<>(taskId, sink.getConfiguration());
+        UpdateQueueSinkOperationResult updateResult = store.maintenance().send(new UpdateQueueSinkOperation<>(taskId, sink.getConfiguration()));
         assertThat(updateResult)
                 .isNotNull();
     }

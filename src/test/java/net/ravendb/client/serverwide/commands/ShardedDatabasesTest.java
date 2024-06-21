@@ -23,7 +23,6 @@ public class ShardedDatabasesTest extends ClusterTestBase {
         try (ClusterController cluster = createRaftCluster(3)) {
 
             String database = getDatabaseName();
-            int numberOfNodes = 3;
 
             // create sharded db on two nodes (A, B) and single orchestrator on C
 
