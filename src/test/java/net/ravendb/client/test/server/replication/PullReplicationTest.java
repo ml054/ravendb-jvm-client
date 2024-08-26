@@ -185,6 +185,7 @@ public class PullReplicationTest extends ReplicationTestBase {
                     waitForDocumentToReplicate(sink, User.class,"hub1/1", timeout);
 
                     PullReplicationAsSink pull = new PullReplicationAsSink(hub2.getDatabase(), "ConnectionString2-" + sink.getDatabase(), definitionName2);
+                    pull.setUrl(sink.getUrls()[0]);
                     pull.setTaskId(pullTasks.get(0).getTaskId());
 
                     addWatcherToReplicationTopology(sink, pull, hub2.getUrls());
@@ -277,6 +278,7 @@ public class PullReplicationTest extends ReplicationTestBase {
 
                 PullReplicationAsSink pull = new PullReplicationAsSink(hub.getDatabase(), "ConnectionString-" + sink.getDatabase(), definitionName);
                 pull.setDisabled(true);
+                pull.setUrl(sink.getUrls()[0]);
                 pull.setTaskId(pullTasks.get(0).getTaskId());
 
                 addWatcherToReplicationTopology(sink, pull, hub.getUrls());
@@ -386,6 +388,7 @@ public class PullReplicationTest extends ReplicationTestBase {
 
         for (DocumentStore store : hub) {
             PullReplicationAsSink pull = new PullReplicationAsSink(store.getDatabase(), "ConnectionString-" + store.getDatabase(), remoteName);
+            pull.setUrl(sink.getUrls()[0]);
             modifyReplicationDestination(pull);
             resList.add(addWatcherToReplicationTopology(sink, pull, store.getUrls()));
         }
