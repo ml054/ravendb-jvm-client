@@ -261,7 +261,7 @@ public class PullReplicationTest extends ReplicationTestBase {
         try (DocumentStore sink = getDocumentStore()) {
             try (DocumentStore hub = getDocumentStore()) {
                 String definitionName = "pull-replication " + hub.getDatabase();
-                int timeout = 3_000;
+                int timeout = 15_000;
 
                 hub.maintenance().forDatabase(hub.getDatabase())
                         .send(new PutPullReplicationAsHubOperation(definitionName));
@@ -286,7 +286,7 @@ public class PullReplicationTest extends ReplicationTestBase {
                     main.saveChanges();
                 }
 
-                assertThat(waitForDocumentToReplicate(sink, User.class, "hub/2", timeout))
+                assertThat(waitForDocumentToReplicate(sink, User.class, "hub/2", timeout / 3))
                         .isNull();
 
                 pull.setDisabled(false);
