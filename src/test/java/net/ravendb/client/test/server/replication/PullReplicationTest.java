@@ -189,7 +189,7 @@ public class PullReplicationTest extends ReplicationTestBase {
 
                     addWatcherToReplicationTopology(sink, pull, hub2.getUrls());
 
-                    Thread.sleep(500); // wait a bit to process updates
+                    Thread.sleep(5000); // wait a bit to process updates
 
                     try (IDocumentSession main = hub.openSession()) {
                         main.store(new User(), "hub1/2");
@@ -281,7 +281,7 @@ public class PullReplicationTest extends ReplicationTestBase {
 
                 addWatcherToReplicationTopology(sink, pull, hub.getUrls());
 
-                Thread.sleep(500); // wait a bit to process updates
+                Thread.sleep(5000); // wait a bit to process updates
 
                 try (IDocumentSession main = hub.openSession()) {
                     main.store(new User(), "hub/2");
