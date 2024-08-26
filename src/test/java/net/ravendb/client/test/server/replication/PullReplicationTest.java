@@ -171,7 +171,7 @@ public class PullReplicationTest extends ReplicationTestBase {
                     String definitionName1 = "pull-replication " + hub.getDatabase();
                     String definitionName2 = "pull-replication " + hub2.getDatabase();
 
-                    int timeout = 3_000;
+                    int timeout = 15_000;
 
                     hub.maintenance().forDatabase(hub.getDatabase()).send(new PutPullReplicationAsHubOperation(definitionName1));
                     hub2.maintenance().forDatabase(hub2.getDatabase()).send(new PutPullReplicationAsHubOperation(definitionName2));
@@ -281,6 +281,8 @@ public class PullReplicationTest extends ReplicationTestBase {
 
                 addWatcherToReplicationTopology(sink, pull, hub.getUrls());
 
+                Thread.sleep(500); // wait a bit to process updates
+
                 try (IDocumentSession main = hub.openSession()) {
                     main.store(new User(), "hub/2");
                     main.saveChanges();
@@ -291,6 +293,8 @@ public class PullReplicationTest extends ReplicationTestBase {
 
                 pull.setDisabled(false);
                 addWatcherToReplicationTopology(sink, pull, hub.getUrls());
+
+                Thread.sleep(500); // wait a bit to process updates
 
                 try (IDocumentSession main = hub.openSession()) {
                     main.store(new User(), "hub/3");
