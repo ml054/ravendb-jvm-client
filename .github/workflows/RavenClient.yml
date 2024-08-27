@@ -7,6 +7,12 @@ on:
     branches: [ v6.0 ]
   pull_request:
     branches: [ v6.0 ]
+  workflow_dispatch:
+    inputs:
+      ravendb_version:
+        description: 'RavenDB Version'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -34,9 +40,14 @@ jobs:
       with:
         java-version: ${{ matrix.java-version }}
         distribution: "zulu"
-      
+
     - name: Download RavenDB Server
-      run: wget -O RavenDB.tar.bz2 "https://hibernatingrhinos.com/downloads/RavenDB%20for%20Linux%20x64/latest?buildType=${{ env.RAVENDB_BUILD_TYPE }}&version=${{ matrix.serverVersion }}"
+      run: |
+        if [[ -n "${{ inputs.ravendb_version }}" ]]; then
+          wget -O RavenDB.tar.bz2 "https://daily-builds.s3.amazonaws.com/RavenDB-${{ inputs.ravendb_version }}-linux-x64.tar.bz2"
+        else
+          wget -O RavenDB.tar.bz2 "https://hibernatingrhinos.com/downloads/RavenDB%20for%20Linux%20x64/latest?buildType=${{ env.RAVENDB_BUILD_TYPE }}&version=${{ matrix.serverVersion }}"
+        fi
 
     - run: mkdir certs
     - run: openssl genrsa -traditional -out certs/ca.key 2048
