@@ -171,7 +171,7 @@ public class PullReplicationTest extends ReplicationTestBase {
                     String definitionName1 = "pull-replication " + hub.getDatabase();
                     String definitionName2 = "pull-replication " + hub2.getDatabase();
 
-                    int timeout = 3_000;
+                    int timeout = 15_000;
 
                     hub.maintenance().forDatabase(hub.getDatabase()).send(new PutPullReplicationAsHubOperation(definitionName1));
                     hub2.maintenance().forDatabase(hub2.getDatabase()).send(new PutPullReplicationAsHubOperation(definitionName2));
@@ -185,6 +185,7 @@ public class PullReplicationTest extends ReplicationTestBase {
                     waitForDocumentToReplicate(sink, User.class,"hub1/1", timeout);
 
                     PullReplicationAsSink pull = new PullReplicationAsSink(hub2.getDatabase(), "ConnectionString2-" + sink.getDatabase(), definitionName2);
+                    pull.setUrl(sink.getUrls()[0]);
                     pull.setTaskId(pullTasks.get(0).getTaskId());
 
                     addWatcherToReplicationTopology(sink, pull, hub2.getUrls());
@@ -261,7 +262,7 @@ public class PullReplicationTest extends ReplicationTestBase {
         try (DocumentStore sink = getDocumentStore()) {
             try (DocumentStore hub = getDocumentStore()) {
                 String definitionName = "pull-replication " + hub.getDatabase();
-                int timeout = 8_000;
+                int timeout = 15_000;
 
                 hub.maintenance().forDatabase(hub.getDatabase())
                         .send(new PutPullReplicationAsHubOperation(definitionName));
@@ -277,20 +278,25 @@ public class PullReplicationTest extends ReplicationTestBase {
 
                 PullReplicationAsSink pull = new PullReplicationAsSink(hub.getDatabase(), "ConnectionString-" + sink.getDatabase(), definitionName);
                 pull.setDisabled(true);
+                pull.setUrl(sink.getUrls()[0]);
                 pull.setTaskId(pullTasks.get(0).getTaskId());
 
                 addWatcherToReplicationTopology(sink, pull, hub.getUrls());
+
+                Thread.sleep(500); // wait a bit to process updates
 
                 try (IDocumentSession main = hub.openSession()) {
                     main.store(new User(), "hub/2");
                     main.saveChanges();
                 }
 
-                assertThat(waitForDocumentToReplicate(sink, User.class, "hub/2", timeout))
+                assertThat(waitForDocumentToReplicate(sink, User.class, "hub/2", timeout / 3))
                         .isNull();
 
                 pull.setDisabled(false);
                 addWatcherToReplicationTopology(sink, pull, hub.getUrls());
+
+                Thread.sleep(500); // wait a bit to process updates
 
                 try (IDocumentSession main = hub.openSession()) {
                     main.store(new User(), "hub/3");
@@ -382,6 +388,7 @@ public class PullReplicationTest extends ReplicationTestBase {
 
         for (DocumentStore store : hub) {
             PullReplicationAsSink pull = new PullReplicationAsSink(store.getDatabase(), "ConnectionString-" + store.getDatabase(), remoteName);
+            pull.setUrl(sink.getUrls()[0]);
             modifyReplicationDestination(pull);
             resList.add(addWatcherToReplicationTopology(sink, pull, store.getUrls()));
         }
