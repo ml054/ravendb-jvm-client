@@ -2,6 +2,7 @@ package net.ravendb.client.test.server;
 
 import net.ravendb.client.RemoteTestBase;
 import net.ravendb.client.documents.IDocumentStore;
+import net.ravendb.client.infrastructure.DisabledOn70Server;
 import net.ravendb.client.serverwide.operations.logs.GetLogsConfigurationOperation;
 import net.ravendb.client.serverwide.operations.logs.GetLogsConfigurationResult;
 import net.ravendb.client.serverwide.operations.logs.LogMode;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DisabledOn70Server
 public class LogsConfigurationTest extends RemoteTestBase {
 
     @Test
